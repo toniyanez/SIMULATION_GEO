@@ -1,11 +1,20 @@
 import streamlit as st
 import pandas as pd
-# from google.cloud import aiplatform  # Removed - not used and causes errors
 import os
+import importlib.util
 
-# Initialize Vertex AI - Removed initialization, key not needed for this local version.
-# def initialize_vertex_ai(project_id, location):
-#     aiplatform.init(project=project_id, location=location)
+# Function to check if a package is installed
+def check_package_installed(package_name):
+    """
+    Checks if a Python package is installed.
+
+    Args:
+        package_name (str): The name of the package to check.
+
+    Returns:
+        bool: True if the package is installed, False otherwise.
+    """
+    return importlib.util.find_spec(package_name) is not None
 
 # Function to load and analyze Excel file
 def analyze_excel_file(file_path):
@@ -19,6 +28,10 @@ def analyze_excel_file(file_path):
         str: A summary of the Excel file's content, or an error message.
     """
     try:
+        # Check if openpyxl is installed for xlsx files
+        if file_path.lower().endswith(('.xlsx', '.xlsm', '.xltx', '.xltm')) and not check_package_installed('openpyxl'):
+            return "Error: Missing optional dependency 'openpyxl'. Use pip or conda to install it (e.g., `pip install openpyxl`)."
+
         # Read the Excel file into a pandas DataFrame
         df = pd.read_excel(file_path)
 
@@ -86,3 +99,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
