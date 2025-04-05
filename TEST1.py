@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import importlib.util
 import subprocess  # Added for more robust checking
+import sys #added to get executable path
 
 # Function to check if a package is installed
 def check_package_installed(package_name):
@@ -16,9 +17,9 @@ def check_package_installed(package_name):
         bool: True if the package is installed, False otherwise.
     """
     try:
-        # Use subprocess to check if the module can be imported
+        # Use subprocess to check if the module can be imported, using the same python executable
         subprocess.run([
-            'python', '-c', f'import {package_name}'
+            sys.executable, '-c', f'import {package_name}'
         ], check=True, capture_output=True)
         return True
     except subprocess.CalledProcessError:
@@ -40,8 +41,9 @@ def analyze_excel_file(file_path):
         if file_path.lower().endswith(('.xlsx', '.xlsm', '.xltx', '.xltm')) and not check_package_installed('openpyxl'):
             error_message = "Error: Missing optional dependency 'openpyxl'.  Please ensure it is installed.\n"
             error_message += "You can install it using either of the following commands:\n\n"
-            error_message += "**Using pip:**\n```bash\npip install openpyxl\n```\n\n"
+            error_message += f"**Using pip (recommended):**\n```bash\n{sys.executable} -m pip install openpyxl\n```\n\n"
             error_message += "**Using conda:**\n```bash\nconda install openpyxl\n```\n"
+            error_message += f"\n\n**Important:** Use the exact command above, especially the part with '{sys.executable}', to ensure you install it for the correct Python environment."
             return error_message
 
         # Read the Excel file into a pandas DataFrame
@@ -111,3 +113,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
