@@ -2,11 +2,12 @@ import streamlit as st
 import pandas as pd
 import os
 import importlib.util
+import subprocess  # Added for more robust checking
 
 # Function to check if a package is installed
 def check_package_installed(package_name):
     """
-    Checks if a Python package is installed.
+    Checks if a Python package is installed.  Uses a more robust method.
 
     Args:
         package_name (str): The name of the package to check.
@@ -14,7 +15,14 @@ def check_package_installed(package_name):
     Returns:
         bool: True if the package is installed, False otherwise.
     """
-    return importlib.util.find_spec(package_name) is not None
+    try:
+        # Use subprocess to check if the module can be imported
+        subprocess.run([
+            'python', '-c', f'import {package_name}'
+        ], check=True, capture_output=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
 
 # Function to load and analyze Excel file
 def analyze_excel_file(file_path):
@@ -30,7 +38,11 @@ def analyze_excel_file(file_path):
     try:
         # Check if openpyxl is installed for xlsx files
         if file_path.lower().endswith(('.xlsx', '.xlsm', '.xltx', '.xltm')) and not check_package_installed('openpyxl'):
-            return "Error: Missing optional dependency 'openpyxl'. Use pip or conda to install it (e.g., `pip install openpyxl`)."
+            error_message = "Error: Missing optional dependency 'openpyxl'.  Please ensure it is installed.\n"
+            error_message += "You can install it using either of the following commands:\n\n"
+            error_message += "**Using pip:**\n```bash\npip install openpyxl\n```\n\n"
+            error_message += "**Using conda:**\n```bash\nconda install openpyxl\n```\n"
+            return error_message
 
         # Read the Excel file into a pandas DataFrame
         df = pd.read_excel(file_path)
@@ -99,4 +111,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
